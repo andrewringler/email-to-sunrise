@@ -39,10 +39,8 @@ Vagrant::Config.run do |config|
     # Mount main theme
     #config.vm.share_folder "theme", "/var/www/wordpress/wp-content/themes/sunrise-wp-theme", "./sunrise-wp-theme", :owner => "www-data", :group => "www-data"
 
-    # Email to Sunrise Plusing
-  #  config.vm.share_folder "my-plugin", "/var/www/wordpress/wp-content/plugins/emailtosunrise", "./src/emailtosunrise", :owner => "www-data", :group => "www-data"
-
-
+    # Email to Sunrise Plugin
+config.vm.share_folder "my-plugin", "/var/www/wordpress/wp-content/plugins/emailtosunrise", "./src/emailtosunrise", :owner => "www-data", :group => "www-data"
 
 
   # Enable provisioning with Puppet stand alone.  Puppet manifests

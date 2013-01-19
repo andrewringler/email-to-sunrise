@@ -7,15 +7,18 @@ threaded conversations by converting all replies to comments on the original pos
 
 ### Get Started
    * Clone repo, cd email-to-sunrise
-   * Install [rvm](https://rvm.io/)
+   * Install [rvm](https://rvm.io/) latest
       * rvm use 1.9.3
-   * Setup chef
+   * Setup chef 10.14.2
       * gem install librarian
       * mkdir cookbooks
-      * librarian-chef install      
+      * librarian-chef install
+   * Install virtualbox 4.2.0
    * Install [Vagrant](http://docs.vagrantup.com/) v1.0.6
    * vagrant up
    * visit site: http://192.168.33.20/
+   
+#### Run the Tests
    * Install Composer [composer](http://getcomposer.org/)
       * curl -s https://getcomposer.org/installer | php
    * Run Composer
