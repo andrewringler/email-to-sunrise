@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+#^syntax detection
+
+site 'http://community.opscode.com/api/v1'
+
+cookbook 'apt'
+cookbook 'subversion'
+cookbook 'build-essential'
+cookbook 'windows'
+
+# We'll use the latest and greatest branch
+cookbook 'wordpress',
+  :git => 'https://github.com/lewg/chef-wordpress',
+  :ref => 'all-the-things'
