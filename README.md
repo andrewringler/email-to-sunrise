@@ -13,6 +13,10 @@ threaded conversations by converting all replies to comments on the original pos
       * gem install librarian
       * mkdir cookbooks
       * librarian-chef install
+   * Install Composer [composer](http://getcomposer.org/)
+       * curl -s https://getcomposer.org/installer | php
+       * Run Composer
+          * ./afterPull 
    * Install virtualbox 4.2.0
    * Install [Vagrant](http://docs.vagrantup.com/) v1.0.6
    * vagrant up
@@ -24,10 +28,6 @@ threaded conversations by converting all replies to comments on the original pos
    * visit site: http://192.168.33.20/
    
 #### Run the Tests
-   * Install Composer [composer](http://getcomposer.org/)
-      * curl -s https://getcomposer.org/installer | php
-   * Run Composer
-      * ./afterPull
    * Run the Tests
       * ./vendor/bin/phpunit test
     

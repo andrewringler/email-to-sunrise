@@ -14,6 +14,7 @@ Version: 0.1
 Author URI: http://andrewringler.com/
 
 Adapted from wordpress wp-mail.php
+Adapted from http://wordpress.org/extend/plugins/postie/
 */
 
 function email_to_sunrise_post() {
@@ -50,16 +51,30 @@ function email_to_sunrise_post() {
           if($content_type === 'text/plain'){
             echo $message->getContent();
           } else {
-            // output the first text/plain part of a multipart message
+            /*
+             output the text/plain parts of a multipart message
+             write images to tmp file
+             */
             $foundPart = null;
             foreach (new RecursiveIteratorIterator($message) as $part) {
                 try {
                     if (strtok($part->contentType, ';') == 'text/plain') {
                       $foundPart = $part;
-                      echo $foundPart;
-                      break;
+                      echo $foundPart .'<br>';
+                    } else if (strtok($part->contentType, ';') == 'image/jpeg') {
+                      $image = $part->getContent();
+                      $encoding = $part->getHeader('Content-Transfer-Encoding', 'string');
+                      $image = $encoding === Zend\Mime\Mime::ENCODING_BASE64 ? base64_decode($image) : $image;
+                      
+                      $uploadDir = wp_upload_dir();
+                      $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise');
+                      $bytes = file_put_contents($tmpFile, $image);
+                      $filename = $part->getHeaderField('Content-Disposition','filename');
+                      echo "[{$filename} - {$bytes} bytes]" .'<br>';
                     }
                 } catch (Zend_Mail_Exception $e) {
+                  echo 'exception ';
+                  print_r($e);
                     // ignore
                 }
             }
@@ -70,7 +85,7 @@ function email_to_sunrise_post() {
         ?>
       
       </p>
-      <?php
+      <?php      
    }
   
   wp_die( __( 'Ok' ), 'Ok' );
