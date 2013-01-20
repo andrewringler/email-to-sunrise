@@ -26,6 +26,9 @@ function email_to_sunrise_post() {
   // wp_insert_post( $post );
   require 'vendor/autoload.php';
 
+  /* Params are pulled from Admin -> Settings -> Writing -> Post view e-mail
+  mail server should not include protocol as it will be added here by Pop3
+  */
   $mail = new Zend\Mail\Storage\Pop3(array('host'     => get_option('mailserver_url'),
                                            'user'     => get_option('mailserver_login'),
                                            'password' => get_option('mailserver_pass'),
