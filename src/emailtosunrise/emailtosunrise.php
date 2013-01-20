@@ -30,7 +30,7 @@ function email_to_sunrise_post() {
   /* Params are pulled from Admin -> Settings -> Writing -> Post view e-mail
   mail server should not include protocol as it will be added here by Pop3
   */
-  $mail = new Zend\Mail\Storage\Pop3(array('host'     => get_option('mailserver_url'),
+  $mail = new Zend\Mail\Storage\Imap(array('host'     => get_option('mailserver_url'),
                                            'user'     => get_option('mailserver_login'),
                                            'password' => get_option('mailserver_pass'),
                                            'port'     => get_option('mailserver_port'),
@@ -51,16 +51,15 @@ function email_to_sunrise_post() {
           if($content_type === 'text/plain'){
             echo $message->getContent();
           } else {
-            /*
-             output the text/plain parts of a multipart message
-             write images to tmp file
-             */
+            // multi-part message
             $foundPart = null;
             foreach (new RecursiveIteratorIterator($message) as $part) {
                 try {
+                    // plain text part
                     if (strtok($part->contentType, ';') == 'text/plain') {
                       $foundPart = $part;
                       echo $foundPart .'<br>';
+                    // image
                     } else if (strtok($part->contentType, ';') == 'image/jpeg') {
                       $image = $part->getContent();
                       $encoding = $part->getHeader('Content-Transfer-Encoding', 'string');
