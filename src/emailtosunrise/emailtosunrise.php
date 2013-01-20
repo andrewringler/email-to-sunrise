@@ -69,6 +69,8 @@ function email_to_sunrise_post() {
                       $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise');
                       $bytes = file_put_contents($tmpFile, $image);
                       $filename = $part->getHeaderField('Content-Disposition','filename');
+                      $image_url = $uploadDir['url'] .'/'. basename($tmpFile);
+                      echo "<img style=\"max-width: 400px;\" src=\"{$image_url}\"><br>\n";
                       echo "[{$filename} - {$bytes} bytes]" .'<br>';
                     }
                 } catch (Zend_Mail_Exception $e) {
