@@ -1,6 +1,6 @@
 /composer.lock
 /composer.phar
-/vendor
+vendor/
 /cookbooks
 /Cheffile.lock
 /tmp
