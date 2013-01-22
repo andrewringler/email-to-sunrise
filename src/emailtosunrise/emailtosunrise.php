@@ -39,17 +39,28 @@ function email_to_sunrise_post() {
 
    echo '<p>'. $mail->countMessages() . " messages found</p>\n";
    foreach ($mail as $message) {
+      $message_id = $message->getHeader('Message-ID', 'string');
+      $reference1 = '';
+      try {
+        $reference1 = explode(" ", $message->getHeader('References','string'));
+        $reference1 = $reference1[0];
+      } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+        // ignore
+      }
      ?>
       <p>
         From: <?php echo $message->from; ?><br>
         Subject: <?php echo $message->subject; ?><br>
+        Message-ID: <?php echo esc_html($message_id); ?><br>
+        References: <?php echo esc_html($reference1); ?><br>
+        <br>
         <?php
           // text/plain message?
           $content_type = explode(';', $message->contentType);
           $content_type = $content_type[0];
           // text/plain message, just output body its good
           if($content_type === 'text/plain'){
-            echo $message->getContent();
+            echo $message->getContent() .'<br>';
           } else {
             // multi-part message
             $foundPart = null;
