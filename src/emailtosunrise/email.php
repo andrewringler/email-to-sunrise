@@ -26,10 +26,10 @@ function email_to_sunrise_post() {
 
 function handle_message($message) {
    $post_body = '';
-   $message_id = esc_html($message->getHeader('Message-ID', 'string'));
+   $message_id = $message->getHeader('Message-ID', 'string');
    
    if( get_message_seen($message_id) ) {
-       echo 'Skipping '. $message_id .'<br>';
+       echo 'Skipping '. esc_html($message_id) .'<br>';
        return; // this email has already been posted
    } 
    
@@ -49,16 +49,16 @@ function handle_message($message) {
    $reference1 = '';
    try {
      $reference1 = explode(" ", $message->getHeader('References','string'));
-     $reference1 = esc_html($reference1[0]);
+     $reference1 = $reference1[0];
    } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
-     // ignore
+     // ignore, no references, not a reply or forward
    }
   ?>
    <p>
-     From: <?php echo $message->from; ?><br>
-     Subject: <?php echo $message->subject; ?><br>
-     Message-ID: <?php echo $message_id; ?><br>
-     References: <?php echo $reference1; ?><br>
+     From: <?php echo esc_html($message->from); ?><br>
+     Subject: <?php echo esc_html($message->subject); ?><br>
+     Message-ID: <?php echo esc_html($message_id); ?><br>
+     References: <?php echo esc_html($reference1); ?><br>
      <br>
      <?php
        // text/plain message?
@@ -66,8 +66,8 @@ function handle_message($message) {
        $content_type = $content_type[0];
        // text/plain message, just output body its good
        if($content_type === 'text/plain'){
-         $post_body = wp_strip_all_tags($message->getContent());
-         echo $post_body .'<br>';
+         $post_body = $message->getContent();
+         echo esc_html($post_body) .'<br>';
        } else {
          // multi-part message
          $foundPart = null;
@@ -76,8 +76,8 @@ function handle_message($message) {
                  // plain text part
                  if (strtok($part->contentType, ';') == 'text/plain') {
                    $foundPart = $part;
-                   $post_body = wp_strip_all_tags($foundPart);
-                   echo $post_body .'<br>';
+                   $post_body = $foundPart;
+                   echo ($post_body) .'<br>';
                    
                  // image
                  } else if (strtok($part->contentType, ';') == 'image/jpeg') {
@@ -91,12 +91,11 @@ function handle_message($message) {
                    $filename = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
                    $image_url = $uploadDir['url'] .'/'. basename($tmpFile);
                    echo "<img style=\"max-width: 400px;\" src=\"{$image_url}\"><br>\n";
-                   echo "[{$filename} - {$bytes} bytes]" .'<br>';
+                   echo '['. esc_html($filename) ." - {$bytes} bytes]<br>";
                  }
              } catch (Zend_Mail_Exception $e) {
-               echo 'exception ';
-               print_r($e);
-                 // ignore
+                echo 'Exception trying to read '. esc_html($message_id) .' '.esc_html($e);
+                 // continue on
              }
          }
          if (!$foundPart) {
@@ -122,7 +121,7 @@ function handle_message($message) {
        //           $post = new WP_Query( $args );
        
        // create post
-       $title = sanitize_text_field($message->subject);
+       $title = $message->subject;
        
        // is the email sender an author on the blog?
        if ( preg_match('|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $message->from, $matches) )
@@ -149,7 +148,7 @@ function handle_message($message) {
            'post_author'   => $post_author,
          );
          // $post_id = wp_insert_post( $post );
-         add_post_meta( $post_id, 'message_id', $message_id );
+         // add_post_meta( $post_id, 'message_id', $message_id );
          
          echo 'Added post ' . $post_id;
 				}

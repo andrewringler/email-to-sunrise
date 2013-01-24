@@ -1,15 +1,15 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "0.1";
+$emailtosunrise_db_version = "0.2";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
    global $emailtosunrise_db_version;
 
-   $table_name = $wpdb->prefix . "emailtosunrise_email";
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
       
-   $sql = "CREATE TABLE $table_name (id VARCHAR(256) NOT NULL,
+   $sql = "CREATE TABLE $message_table (id VARCHAR(78) NOT NULL,
      UNIQUE KEY id (id)
      );";
 
@@ -21,15 +21,23 @@ function email_to_sunrise_install_db() {
 
 function set_message_seen($message_id) {
    global $wpdb;
-   $table_name = $wpdb->prefix . "emailtosunrise_email";
-   // $rows_affected = $wpdb->insert( $table_name, array( 'id' => sha1($message_id, $raw_output = true) ) );
-   $rows_affected = $wpdb->insert( $table_name, array( 'id' => esc_sql($message_id) ) );
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   $message_id_truncated = substr($message_id, 0, 78);
+   
+   $rows_affected = $wpdb->insert( 
+      $message_table, 
+      array( 'id' => $message_id_truncated ),
+      array( '%s')      
+    );
 }
 
 function get_message_seen($message_id) {
    global $wpdb;
-   $table_name = $wpdb->prefix . "emailtosunrise_email";
-   $message_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name WHERE id = '" .esc_sql($message_id) ."'");
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   $message_id_truncated = substr($message_id, 0, 78);
+   
+   $sql = $wpdb->prepare("SELECT COUNT(*) FROM $message_table WHERE id=%s;", array($message_id_truncated));
+   $message_count = $wpdb->get_var( $sql );
    return $message_count == 1;
 }
 

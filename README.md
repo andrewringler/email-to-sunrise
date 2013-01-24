@@ -35,6 +35,7 @@ threaded conversations by converting all replies to comments on the original pos
 ### References
    * [Post to your blog using email](http://codex.wordpress.org/Post_to_your_blog_using_email)
    * [composer wordpress tutorial](http://www.andrewmeredith.info/tutorials/2012/10/26/wordpress-plugins-with-composer-tutorial/)
+   * [wordpress data sanitization and validation](http://wp.tutsplus.com/tutorials/creative-coding/data-sanitization-and-validation-with-wordpress/)
    
 ### Notes
    * vagrant debug
