@@ -57,7 +57,20 @@ function set_message_status($message_id, $status, $type, $author = '', $subject 
    $reference_id_truncated = substr($reference, 0, 78);
    $author_truncated = substr($author, 0, 255);
    $subject_truncated = substr($subject, 0, 20);
-   $body_truncated = preg_replace('/[\W\S]/', '', substr($body, 0, 20));
+   
+   $patterns = array (
+     '/\w/', // match any alpha-numeric character sequence, except underscores
+     '/\d/', // match any number of decimal digits
+     '/_/',  // match any number of underscores
+     '/\s+/'  // match any number of white spaces
+   );
+   $replaces = array (
+     '$0', // keep
+     '$0', // keep 
+     '$0', // keep
+     ' ' // leave only 1 space
+   );
+   $body_truncated = substr(preg_filter($patterns, $replaces, $body), 0, 20);
    
    $id = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $message_table WHERE message_id=%s;", array($message_id_truncated)) );
    if( $id ) {

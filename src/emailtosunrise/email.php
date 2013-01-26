@@ -102,11 +102,15 @@ function get_message_info($message) {
    }
    
    // matches filters?
-   if(strstr(strtolower($m->title), 'sunrise') || strstr(strtolower($m->body), 'sunrise')){
+   if(strstr(strtolower($m->title), 'sunrise') 
+   || strstr(strtolower($m->body), 'sunrise')
+   || strstr(strtolower($m->filename), 'sunrise') ){
      $category_found = true;
      $m->category = 'sunrises';         
    }
-   if(strstr(strtolower($m->title), 'sunset') || strstr(strtolower($m->body), 'sunset')){
+   if(strstr(strtolower($m->title), 'sunset') 
+   || strstr(strtolower($m->body), 'sunset')
+   || strstr(strtolower($m->filename), 'sunset') ){
      $category_found = true;
      $m->category = 'sunsets';
    }
@@ -127,7 +131,7 @@ function get_message_info($message) {
 			}
 		}
 
-	  if ( strstr(strtolower($m->title), 'Fwd') || strstr(strtolower($m->body), '-forward-') ) {
+	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), '-forward-') ) {
 	    $m->type = 'ignored'; // ignore forwards
 		} else if ( references_an_original($m->reference_id) ) {
 		  $m->type = 'comment';
@@ -152,53 +156,21 @@ function handle_message_info($m) {
   if($m->status === 'seen') {
     echo '<h2>Seen</h2>\n<small>'. esc_html($m->message_id) .'</small><br>';    
     return;
-  } else if($m->type === 'original') {
-    ?>
-     <p>
-       <h2>Original</h2>
-       From: <?php echo esc_html($m->author_email); ?><br>
-       Subject: <?php echo esc_html($m->title); ?><br>
-       Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
-       <br>
-       <?php
-    echo esc_html($m->body) .'<br>';
-    echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
-    echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
-    echo '<p>';    
-    set_message_status($m->message_id, 'seen', 'original', $m->author_email, $m->title, $m->body, $m->reference_id);
-  } else if($m->type === 'comment') {
-    ?>
-     <p>
-       <h2>Comment</h2>
-       From: <?php echo esc_html($m->author_email); ?><br>
-       Subject: <?php echo esc_html($m->title); ?><br>
-       Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
-       References: <?php echo esc_html($m->reference_id); ?><br>
-       <br>
-       <?php
-    echo esc_html($m->body) .'<br>';
-    echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
-    echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
-    echo '<p>';    
-    set_message_status($m->message_id, 'seen', 'comment', $m->author_email, $m->title, $m->body, $m->reference_id);
   } else {
     ?>
      <p>
-       <h2>Ignore</h2>
+       <h2><?php echo $m->type; ?></h2>
        From: <?php echo esc_html($m->author_email); ?><br>
        Subject: <?php echo esc_html($m->title); ?><br>
        Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
-       References: <?php echo esc_html($m->reference_id); ?><br>
        <br>
        <?php
     echo esc_html($m->body) .'<br>';
-    if($m->filename){
-      echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
-      echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";      
-    }
+    echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
+    echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
     echo '<p>';    
     
-    set_message_status($m->message_id, 'seen', 'ignored', $m->author_email, $m->title, $m->body, $m->reference_id);
+    set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
     return;
   }
 }
