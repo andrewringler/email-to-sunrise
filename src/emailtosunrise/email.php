@@ -16,8 +16,15 @@ function email_to_sunrise_post() {
                                            'ssl'      => 'SSL'
                                            ));  
 
+   $mail->selectFolder('sunrise');
    echo '<p>'. $mail->countMessages() . " messages found</p>\n";
+   // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
+   $count = 0;
    foreach ($mail as $message) {
+     if($count > 20){
+       break;
+     }
+     $count++;
      $m = get_message_info($message);
      handle_message_info($m);    
    }
@@ -43,7 +50,11 @@ function get_message_info($message) {
      // ignore, no references, not a reply or forward
    }
    
-   $m->title = trim($message->subject);
+   try{
+     $m->title = trim($message->subject);     
+   } catch (Exception $e) {
+     $m->title = '';
+   }
    
    // text/plain message?
    $content_type = explode(';', $message->contentType);
@@ -70,9 +81,13 @@ function get_message_info($message) {
                $uploadDir = wp_upload_dir();
                $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise');
                $m->bytes = file_put_contents($tmpFile, $image);
-               $m->filename = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
-               $m->image_url = $uploadDir['url'] .'/'. basename($tmpFile);
                
+               try {
+                 $m->filename = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
+               } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+                 $m->filename = '';
+               }
+               $m->image_url = $uploadDir['url'] .'/'. basename($tmpFile);               
                $image_found = true;
              }
          } catch (Zend_Mail_Exception $e) {
@@ -87,11 +102,11 @@ function get_message_info($message) {
    }
    
    // matches filters?
-   if(strstr($message->subject, 'sunrise') || strstr($post_body, 'sunrise')){
+   if(strstr(strtolower($m->title), 'sunrise') || strstr(strtolower($m->body), 'sunrise')){
      $category_found = true;
      $m->category = 'sunrises';         
    }
-   if(strstr($message->subject, 'sunset') || strstr($post_body, 'sunset')){
+   if(strstr(strtolower($m->title), 'sunset') || strstr(strtolower($m->body), 'sunset')){
      $category_found = true;
      $m->category = 'sunsets';
    }
@@ -115,7 +130,7 @@ function get_message_info($message) {
 		if ( $author_found && $category_found && $image_found ) {
 		  $m->status = 'NEW_POST';
 		} else {
-		  $m->status = "Not a post {$author_found} {$category_found} {$image_found}";
+		  $m->status = "Not a post {$m->author_email} {$m->category} {$m->image_url}";
 		}
 		
 		return $m;
@@ -145,7 +160,24 @@ function handle_message_info($m) {
     echo '<p>';    
     set_message_status($m->message_id, 'POST');
   } else {
-    echo 'Not a Post <small>'. esc_html($m->message_id) .'</small><br>';
+    echo 'Not a Post <small>'. esc_html($m->message_id) .' '. esc_html($m->status) .'</small><br>';
+    
+    ?>
+     <p>
+       From: <?php echo esc_html($m->author_email); ?><br>
+       Subject: <?php echo esc_html($m->title); ?><br>
+       Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
+       References: <?php echo esc_html($m->reference); ?><br>
+       <br>
+       <?php
+    echo esc_html($m->body) .'<br>';
+    if($m->filename){
+      echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
+      echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";      
+    }
+
+    echo '<p>';    
+    
     set_message_status($m->message_id, 'IGNORED');
     return;
   }
