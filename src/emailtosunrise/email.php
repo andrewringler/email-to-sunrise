@@ -21,7 +21,7 @@ function email_to_sunrise_post() {
    // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
    $count = 0;
    foreach ($mail as $message) {
-     if($count > 20){
+     if($count >= 50){
        break;
      }
      $count++;
@@ -37,8 +37,8 @@ function get_message_info($message) {
    $post_body = '';
    $m->message_id = $message->getHeader('Message-ID', 'string');
    
-   if( get_message_handled( $m->message_id ) ) {
-     $m->status = 'HANDLED';
+   if( get_message_status( $m->message_id ) === 'seen' ) {
+     $m->status = 'seen';
      return $m;
    } 
 
@@ -91,12 +91,12 @@ function get_message_info($message) {
                $image_found = true;
              }
          } catch (Zend_Mail_Exception $e) {
-           set_message_status($m->message_id, 'ERROR');
+           set_message_status($m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
            return (object) array( 'error' => 'Exception trying to read '. $m->message_id .' '.$e );
          }
      }
      if (!$foundPart) {
-       set_message_status($m->message_id, 'ERROR');
+       set_message_status($m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
        return (object) array( 'error' => 'No parts found in a multi-part message!' );
      }
    }
@@ -126,11 +126,18 @@ function get_message_info($message) {
 				$author_found = true;
 			}
 		}
-		
-		if ( $author_found && $category_found && $image_found ) {
-		  $m->status = 'NEW_POST';
+
+	  if ( strstr(strtolower($m->title), 'Fwd') || strstr(strtolower($m->body), '-forward-') ) {
+	    $m->type = 'ignored'; // ignore forwards
+		} else if ( references_an_original($m->reference_id) ) {
+		  $m->type = 'comment';
+		} else if ( $m->reference_id ) {
+		  // has a reference, maybe will be a comment once we get more mail in
+		  $m->type = 'unknown';		  
+		} else if ( $author_found && $category_found && $image_found ) {
+		  $m->type = 'original';
 		} else {
-		  $m->status = "Not a post {$m->author_email} {$m->category} {$m->image_url}";
+		  $m->type = 'ignored';
 		}
 		
 		return $m;
@@ -142,32 +149,46 @@ function handle_message_info($m) {
     return;
   }
   
-  if($m->status === 'HANDLED') {
-    echo 'Seen <small>'. esc_html($m->message_id) .'</small><br>';    
+  if($m->status === 'seen') {
+    echo '<h2>Seen</h2>\n<small>'. esc_html($m->message_id) .'</small><br>';    
     return;
-  } else if($m->status === 'NEW_POST') {
+  } else if($m->type === 'original') {
     ?>
      <p>
+       <h2>Original</h2>
        From: <?php echo esc_html($m->author_email); ?><br>
        Subject: <?php echo esc_html($m->title); ?><br>
        Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
-       References: <?php echo esc_html($m->reference); ?><br>
        <br>
        <?php
     echo esc_html($m->body) .'<br>';
     echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
     echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
     echo '<p>';    
-    set_message_status($m->message_id, 'POST');
-  } else {
-    echo 'Not a Post <small>'. esc_html($m->message_id) .' '. esc_html($m->status) .'</small><br>';
-    
+    set_message_status($m->message_id, 'seen', 'original', $m->author_email, $m->title, $m->body, $m->reference_id);
+  } else if($m->type === 'comment') {
     ?>
      <p>
+       <h2>Comment</h2>
        From: <?php echo esc_html($m->author_email); ?><br>
        Subject: <?php echo esc_html($m->title); ?><br>
        Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
-       References: <?php echo esc_html($m->reference); ?><br>
+       References: <?php echo esc_html($m->reference_id); ?><br>
+       <br>
+       <?php
+    echo esc_html($m->body) .'<br>';
+    echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
+    echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
+    echo '<p>';    
+    set_message_status($m->message_id, 'seen', 'comment', $m->author_email, $m->title, $m->body, $m->reference_id);
+  } else {
+    ?>
+     <p>
+       <h2>Ignore</h2>
+       From: <?php echo esc_html($m->author_email); ?><br>
+       Subject: <?php echo esc_html($m->title); ?><br>
+       Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
+       References: <?php echo esc_html($m->reference_id); ?><br>
        <br>
        <?php
     echo esc_html($m->body) .'<br>';
@@ -175,10 +196,9 @@ function handle_message_info($m) {
       echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
       echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";      
     }
-
     echo '<p>';    
     
-    set_message_status($m->message_id, 'IGNORED');
+    set_message_status($m->message_id, 'seen', 'ignored', $m->author_email, $m->title, $m->body, $m->reference_id);
     return;
   }
 }
