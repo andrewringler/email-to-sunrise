@@ -40,6 +40,9 @@ threaded conversations by converting all replies to comments on the original pos
 ### Notes
    * vagrant debug
       * VAGRANT_LOG=INFO vagrant up
+   * vagrant ssh   (login to vagrant instance)
+      * less /var/log/apache2/wordpress-error.log
+      * mysql -u root -p 0JR1qLXJkztAbgOBGNBoLzimU
       
 ### Todo
    * rewrite url endpoint for email checking:
