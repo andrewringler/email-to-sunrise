@@ -1,6 +1,7 @@
 <?php
 // Adapted from wordpress wp-mail.php
 // Adapted from http://wordpress.org/extend/plugins/postie/
+require_once(ABSPATH . 'wp-admin/includes/image.php');
 
 function email_to_sunrise_post() {
   /* Params are pulled from Admin -> Settings -> Writing -> Post view e-mail
@@ -48,7 +49,22 @@ function email_to_sunrise_post() {
           'post_status'   => 'publish',
           'post_author'   => $author_id
        );
-       wp_insert_post( $post_insert );
+       $post_id = wp_insert_post( $post_insert );
+       
+       $image = get_image($post->id);
+       echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
+       $wp_filetype = wp_check_filetype(basename($image->filename), null);
+       $attachment = array(
+          'guid' => $image->image_url, 
+          'post_mime_type' => $wp_filetype['type'],
+          'post_title' => preg_replace('/\.[^.]+$/', '', basename($image->filename)),
+          'post_content' => '',
+          'post_status' => 'inherit'
+       );
+       $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
+       $attach_data = wp_generate_attachment_metadata( $attach_id, $image->filename );
+       wp_update_attachment_metadata( $attach_id, $attach_data );
+       
        update_message_status( $post->id, 'posted' );
     }		
    }
@@ -106,12 +122,13 @@ function get_message_info($message) {
                
                $uploadDir = wp_upload_dir();
                $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise');
+               $m->filename = $tmpFile;
                $m->bytes = file_put_contents($tmpFile, $image);
                
                try {
-                 $m->filename = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
+                 $m->image_name = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
                } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
-                 $m->filename = '';
+                 $m->image_name = '';
                }
                $m->image_url = $uploadDir['url'] .'/'. basename($tmpFile);               
                $image_found = true;
@@ -130,13 +147,13 @@ function get_message_info($message) {
    // matches filters?
    if(strstr(strtolower($m->title), 'sunrise') 
    || strstr(strtolower($m->body), 'sunrise')
-   || strstr(strtolower($m->filename), 'sunrise') ){
+   || strstr(strtolower($m->image_name), 'sunrise') ){
      $category_found = true;
      $m->category = 'sunrises';         
    }
    if(strstr(strtolower($m->title), 'sunset') 
    || strstr(strtolower($m->body), 'sunset')
-   || strstr(strtolower($m->filename), 'sunset') ){
+   || strstr(strtolower($m->image_name), 'sunset') ){
      $category_found = true;
      $m->category = 'sunsets';
    }
@@ -198,13 +215,13 @@ function handle_message_info($m) {
     echo esc_html($m->body) .'<br>';
     if( $m->image_url ) {
       echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
-      echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";      
+      echo '['. esc_html($m->image_name) ." - {$m->bytes} bytes]<br>";      
     }
     echo '<p>';    
     
     $id = set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
     if( $m->type === 'original' && $id ) {
-      update_attachment($id, $m->image_url);      
+      update_attachment($id, $m->image_url, $m->filename);      
     }
     return;
   }

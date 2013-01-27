@@ -1,7 +1,7 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "1.3";
+$emailtosunrise_db_version = "1.4";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
@@ -27,7 +27,8 @@ function email_to_sunrise_install_db() {
    $sql = "CREATE TABLE $image_table (
      id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
      email_id BIGINT NOT NULL,
-     image_url VARCHAR(1024) NOT NULL
+     image_url VARCHAR(1024) NOT NULL,
+     filename VARCHAR(1024) NOT NULL
      );";
    dbDelta($sql);
  
@@ -150,17 +151,16 @@ function find_new_comments() {
    return $wpdb->get_var( $sql );
 }
 
-function update_attachment($email_id, $image_url) {
+function update_attachment($email_id, $image_url, $filename) {
    global $wpdb;
-   $message_table = $wpdb->prefix . "emailtosunrise_email";
    $image_table = $wpdb->prefix . "emailtosunrise_images";
    
-   if ( $email_id && $image_url ) {
+   if ( $email_id && $image_url && $filename ) {
      $sql = $wpdb->prepare("
-       INSERT $message_table SET status= $image_table
-       ( email_id, image_url )
-       VALUES ( %s, %s )",
-       array( $email_id, $image_url )
+       INSERT INTO $image_table
+       ( email_id, image_url, filename )
+       VALUES ( %s, %s, %s )",
+       array( $email_id, $image_url, $filename )
      );     
      return $wpdb->get_var( $sql ); 
    }
@@ -178,6 +178,14 @@ function new_posts() {
    $message_table = $wpdb->prefix . "emailtosunrise_email";
    
    $sql = "SELECT * FROM $message_table WHERE type='original' AND status='seen'";
+   return $wpdb->get_results( $sql );
+}
+
+function get_image($post_id) {
+   global $wpdb;
+   $image_table = $wpdb->prefix . "emailtosunrise_images";
+   
+   $sql = $wpdb->prepare("SELECT * FROM $image_table WHERE email_id=%d LIMIT 1;", array( $post_id ));
    return $wpdb->get_results( $sql );
 }
 
