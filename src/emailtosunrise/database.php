@@ -145,7 +145,7 @@ function find_new_comments() {
    
    $sql = "UPDATE $message_table comment, $message_table original
       SET comment.type='comment'
-      WHERE comment.type='comment?' AND comment.status='seen' 
+      WHERE comment.type='comment?' AND (comment.status='seen' OR comment.status='posted')
       AND comment.reference = original.message_id AND original.type='original';";
       
    return $wpdb->get_var( $sql );
@@ -178,6 +178,14 @@ function new_posts() {
    $message_table = $wpdb->prefix . "emailtosunrise_email";
    
    $sql = "SELECT * FROM $message_table WHERE type='original' AND status='seen'";
+   return $wpdb->get_results( $sql );
+}
+
+function new_comments() {
+   global $wpdb;
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   
+   $sql = "SELECT * FROM $message_table WHERE type='comment' AND status='seen'";
    return $wpdb->get_results( $sql );
 }
 

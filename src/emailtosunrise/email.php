@@ -23,7 +23,7 @@ function email_to_sunrise_post() {
    // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
    $count = 0;
    foreach ($mail as $message) {
-     if($count >= 3){
+     if($count >= 50){
        break;
      }
      $count++;
@@ -51,6 +51,7 @@ function email_to_sunrise_post() {
           'post_author'   => $author_id
        );
        $post_id = wp_insert_post( $post_insert );
+       add_post_meta( $post_id, 'emailtosunrise_email_id', $post->id );
        
        $image = get_image($post->id);
        echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
@@ -84,7 +85,30 @@ function email_to_sunrise_post() {
     }		
    }
     
-   // create comments from database
+   // // create comments from database
+   // $new_comments = new_comments();
+   // foreach ($new_comments as $comment) {
+   //   $time = current_time('mysql');
+   //   
+   //   $post_id = wordpress_post_id_for_email_id( $comment )
+   //   
+   //   $data = array(
+   //       'comment_post_ID' => 1,
+   //       'comment_author' => 'admin',
+   //       'comment_author_email' => 'admin@admin.com',
+   //       'comment_author_url' => 'http://',
+   //       'comment_content' => 'content here',
+   //       'comment_type' => '',
+   //       'comment_parent' => 0,
+   //       'user_id' => 1,
+   //       'comment_author_IP' => '127.0.0.1',
+   //       'comment_agent' => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)',
+   //       'comment_date' => $time,
+   //       'comment_approved' => 1,
+   //   );
+   // 
+   //   wp_insert_comment($data);
+   // }
   
   wp_die( __( 'Ok' ), 'Ok' );
 }
