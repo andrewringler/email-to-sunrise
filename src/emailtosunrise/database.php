@@ -1,14 +1,14 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "0.8";
+$emailtosunrise_db_version = "1.3";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
    global $emailtosunrise_db_version;
+   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-   $message_table = $wpdb->prefix . "emailtosunrise_email";
-   
+   $message_table = $wpdb->prefix . "emailtosunrise_email";   
    // 78 is the recommended max message_id length - http://tools.ietf.org/html/rfc5322#section-3.6.4
    $sql = "CREATE TABLE $message_table (
      id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,     
@@ -21,8 +21,14 @@ function email_to_sunrise_install_db() {
      reference VARCHAR(78),
      UNIQUE KEY message_id (id)
      );";
-
-   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+   dbDelta($sql);
+ 
+   $image_table = $wpdb->prefix . "emailtosunrise_images";
+   $sql = "CREATE TABLE $image_table (
+     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+     email_id BIGINT NOT NULL,
+     image_url VARCHAR(1024) NOT NULL
+     );";
    dbDelta($sql);
  
    add_option("emailtosunrise_db_version", $emailtosunrise_db_version);
@@ -88,6 +94,8 @@ function set_message_status($message_id, $status, $type, $author = '', $subject 
      	array( '%s','%s','%s','%s','%s','%s' ), 
      	array( '%d' ) 
      );
+     
+     return $id;
    } else {
      $rows_affected = $wpdb->insert( 
         $message_table, 
@@ -100,6 +108,8 @@ function set_message_status($message_id, $status, $type, $author = '', $subject 
              		'reference' => $reference_id_truncated               	
         )
       );
+      
+      return $wpdb->insert_id;
    }
 }
 
@@ -138,6 +148,22 @@ function find_new_comments() {
       AND comment.reference = original.message_id AND original.type='original';";
       
    return $wpdb->get_var( $sql );
+}
+
+function update_attachment($email_id, $image_url) {
+   global $wpdb;
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   $image_table = $wpdb->prefix . "emailtosunrise_images";
+   
+   if ( $email_id && $image_url ) {
+     $sql = $wpdb->prepare("
+       INSERT INTO $image_table
+       ( email_id, image_url )
+       VALUES ( %s, %s )",
+       array( $email_id, $image_url )
+     );     
+     return $wpdb->get_var( $sql ); 
+   }
 }
 
 ?>

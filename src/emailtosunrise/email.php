@@ -186,7 +186,10 @@ function handle_message_info($m) {
     }
     echo '<p>';    
     
-    set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
+    $id = set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
+    if( $m->type === 'original' && $id ) {
+      update_attachment($id, $m->image_url);      
+    }
     return;
   }
 }
