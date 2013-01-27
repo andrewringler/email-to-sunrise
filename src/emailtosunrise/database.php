@@ -186,7 +186,7 @@ function get_image($post_id) {
    $image_table = $wpdb->prefix . "emailtosunrise_images";
    
    $sql = $wpdb->prepare("SELECT * FROM $image_table WHERE email_id=%d LIMIT 1;", array( $post_id ));
-   return $wpdb->get_results( $sql );
+   return $wpdb->get_row( $sql );
 }
 
 ?>

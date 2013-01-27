@@ -2,6 +2,7 @@
 // Adapted from wordpress wp-mail.php
 // Adapted from http://wordpress.org/extend/plugins/postie/
 require_once(ABSPATH . 'wp-admin/includes/image.php');
+require_once(ABSPATH . 'wp-admin/includes/file.php');
 
 function email_to_sunrise_post() {
   /* Params are pulled from Admin -> Settings -> Writing -> Post view e-mail
@@ -22,7 +23,7 @@ function email_to_sunrise_post() {
    // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
    $count = 0;
    foreach ($mail as $message) {
-     if($count >= 50){
+     if($count >= 3){
        break;
      }
      $count++;
@@ -62,8 +63,22 @@ function email_to_sunrise_post() {
           'post_status' => 'inherit'
        );
        $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
+       echo '<p>attach id: '. esc_html(var_export($attach_id, true)) ."</p>\n";
        $attach_data = wp_generate_attachment_metadata( $attach_id, $image->filename );
-       wp_update_attachment_metadata( $attach_id, $attach_data );
+       echo '<p>attach data: '. esc_html(var_export($attach_data, true)) ."</p>\n";
+       if ( $attach_data ) {
+         wp_update_attachment_metadata( $attach_id, $attach_data );         
+         
+         // pre-pend image to post body
+         $image_post = wp_get_attachment_image( $attach_id, 'full' );
+         
+         $new_post_body = $image_post ."\n". $post->body;
+         wp_update_post( array( 'ID' => $post_id, 'post_content' => $new_post_body) );
+         
+         // <a href="http://192.168.33.20/?attachment_id=1140" rel="attachment wp-att-1140">
+         //   <img class="alignnone size-full wp-image-1140" alt="emailtosunrisezUyM1H" src="http://192.168.33.20/wp-content/uploads/2013/01/emailtosunrisezUyM1H.jpg" width="640" height="640" />
+         //  </a>
+       }
        
        update_message_status( $post->id, 'posted' );
     }		
@@ -79,7 +94,7 @@ function get_message_info($message) {
    $post_body = '';
    $m->message_id = $message->getHeader('Message-ID', 'string');
    
-   if( get_message_status( $m->message_id ) === 'seen' ) {
+   if( get_message_status( $m->message_id ) === 'seen' || get_message_status( $m->message_id ) === 'posted' ) {
      $m->status = 'seen';
      return $m;
    } 
@@ -121,18 +136,23 @@ function get_message_info($message) {
                $image = $encoding === Zend\Mime\Mime::ENCODING_BASE64 ? base64_decode($image) : $image;
                
                $uploadDir = wp_upload_dir();
-               $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise');
-               $m->filename = $tmpFile;
+               $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise') .'.jpg';
                $m->bytes = file_put_contents($tmpFile, $image);
                
-               try {
-                 $m->image_name = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
-               } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
-                 $m->image_name = '';
-               }
-               $m->image_url = $uploadDir['url'] .'/'. basename($tmpFile);               
-               $image_found = true;
-             }
+               // $movefile = wp_handle_upload( $tmpFile, array( 'test_form' => false ) );
+               // echo '<p>movefile: '. esc_html(var_export($movefile, true)) ."</p>\n";
+               
+               // if ( $movefile ) {
+                  $m->filename = $tmpFile;
+                  try {
+                    $m->image_name = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
+                  } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+                    $m->image_name = '';
+                  }
+                  $m->image_url = $uploadDir['url'] . '/' . basename($tmpFile);               
+                  $image_found = true;
+               // }               
+            }
          } catch (Zend_Mail_Exception $e) {
            set_message_status($m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
            return (object) array( 'error' => 'Exception trying to read '. $m->message_id .' '.$e );

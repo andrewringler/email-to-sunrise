@@ -6,3 +6,6 @@ vendor/
 /tmp
 /.vagrant
 /.metadata
+/.project
+/.settings
+/.buildpath
