@@ -5,3 +5,4 @@ vendor/
 /Cheffile.lock
 /tmp
 /.vagrant
+/.metadata
