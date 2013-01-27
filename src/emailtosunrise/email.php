@@ -36,7 +36,23 @@ function email_to_sunrise_post() {
    }
    
    // create posts from database
-   
+   $new_posts = new_posts();
+   foreach ($new_posts as $post) {
+    $userdata = get_user_by('email', $post->author);
+    if ( ! empty( $userdata ) ) {
+      $author_id = $userdata->ID;
+      
+      $post_insert = array(
+          'post_title'    => $post->subject,
+          'post_content'  => $post->body,
+          'post_status'   => 'publish',
+          'post_author'   => $author_id
+       );
+       wp_insert_post( $post_insert );
+       update_message_status( $post->id, 'posted' );
+    }		
+   }
+    
    // create comments from database
   
   wp_die( __( 'Ok' ), 'Ok' );

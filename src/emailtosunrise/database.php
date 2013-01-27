@@ -157,13 +157,28 @@ function update_attachment($email_id, $image_url) {
    
    if ( $email_id && $image_url ) {
      $sql = $wpdb->prepare("
-       INSERT INTO $image_table
+       INSERT $message_table SET status= $image_table
        ( email_id, image_url )
        VALUES ( %s, %s )",
        array( $email_id, $image_url )
      );     
      return $wpdb->get_var( $sql ); 
    }
+}
+
+function update_message_status($id, $status) {
+   global $wpdb;
+   $message_table = $wpdb->prefix . "emailtosunrise_email";   
+   $sql = $wpdb->prepare("UPDATE $message_table SET status=%s WHERE id=%d;", array( $status, $id ));
+   return $wpdb->get_var( $sql ); 
+}
+
+function new_posts() {
+   global $wpdb;
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   
+   $sql = "SELECT * FROM $message_table WHERE type='original' AND status='seen'";
+   return $wpdb->get_results( $sql );
 }
 
 ?>
