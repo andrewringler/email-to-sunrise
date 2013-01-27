@@ -44,7 +44,7 @@ type:
     - from a verified sender
     - it references an original (contains a reference header with a message_id that matches an original)
 
-  unknown - entry should be rechecked in a subsequent pass
+  comment? - entry should be rechecked in a subsequent pass
     - possibly a comment, since we don't exactly know the order we are reading emails
     we could read a potential comment before we have read the original post, so keep these around
 
@@ -120,6 +120,24 @@ function references_an_original($reference_id) {
    $sql = $wpdb->prepare("SELECT COUNT(*) FROM $message_table WHERE type='original' AND message_id=%s;", array($reference_id_truncated));
    $message_count = $wpdb->get_var( $sql );
    return $message_count == 1;
+}
+
+/*
+status is seen
+type is comment?
+message references an original
+*/
+function find_new_comments() {
+   global $wpdb;
+   $message_table = $wpdb->prefix . "emailtosunrise_email";
+   $reference_id_truncated = substr($reference_id, 0, 78);
+   
+   $sql = "UPDATE $message_table comment, $message_table original
+      SET comment.type='comment'
+      WHERE comment.type='comment?' AND comment.status='seen' 
+      AND comment.reference = original.message_id AND original.type='original';";
+      
+   return $wpdb->get_var( $sql );
 }
 
 ?>

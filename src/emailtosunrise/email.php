@@ -28,6 +28,16 @@ function email_to_sunrise_post() {
      $m = get_message_info($message);
      handle_message_info($m);    
    }
+
+   // look for new comments
+   $new_comments = find_new_comments();
+   if( $new_comments ) {
+     echo "<p>Found {$new_comments} new comments</p>";     
+   }
+   
+   // create posts from database
+   
+   // create comments from database
   
   wp_die( __( 'Ok' ), 'Ok' );
 }
@@ -133,13 +143,17 @@ function get_message_info($message) {
 
 	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), '-forward-') ) {
 	    $m->type = 'ignored'; // ignore forwards
-		} else if ( references_an_original($m->reference_id) ) {
-		  $m->type = 'comment';
-		} else if ( $m->reference_id ) {
-		  // has a reference, maybe will be a comment once we get more mail in
-		  $m->type = 'unknown';		  
-		} else if ( $author_found && $category_found && $image_found ) {
-		  $m->type = 'original';
+		} else if ( $author_found && $category_found ) {
+		  if ( references_an_original($m->reference_id) ) {
+		    $m->type = 'comment';
+	    } else if ( $m->reference_id ) {
+		    // has a reference, maybe will be a comment once we get more mail in
+		    $m->type = 'comment?';		  
+		  } else if ( $image_found ) {
+		    $m->type = 'original';
+		  } else {
+  		  $m->type = 'ignored';		    
+		  }
 		} else {
 		  $m->type = 'ignored';
 		}
@@ -154,7 +168,7 @@ function handle_message_info($m) {
   }
   
   if($m->status === 'seen') {
-    echo '<h2>Seen</h2>\n<small>'. esc_html($m->message_id) .'</small><br>';    
+    echo "<h2>Seen</h2>\n<small>". esc_html($m->message_id) .'</small><br>';    
     return;
   } else {
     ?>
@@ -166,8 +180,10 @@ function handle_message_info($m) {
        <br>
        <?php
     echo esc_html($m->body) .'<br>';
-    echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
-    echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";
+    if( $m->image_url ) {
+      echo "<img style=\"max-width: 400px;\" src=\"{$m->image_url}\"><br>\n";
+      echo '['. esc_html($m->filename) ." - {$m->bytes} bytes]<br>";      
+    }
     echo '<p>';    
     
     set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
