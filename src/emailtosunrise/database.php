@@ -1,7 +1,7 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "1.4";
+$emailtosunrise_db_version = "1.5";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
@@ -19,6 +19,7 @@ function email_to_sunrise_install_db() {
      body VARCHAR(25),
      message_id VARCHAR(78) NOT NULL,
      reference VARCHAR(78),
+     ref_id BIGINT,
      UNIQUE KEY message_id (id)
      );";
    dbDelta($sql);
@@ -144,7 +145,7 @@ function find_new_comments() {
    $reference_id_truncated = substr($reference_id, 0, 78);
    
    $sql = "UPDATE $message_table comment, $message_table original
-      SET comment.type='comment'
+      SET comment.type='comment', comment.ref_id=original.id
       WHERE comment.type='comment?' AND (comment.status='seen' OR comment.status='posted')
       AND comment.reference = original.message_id AND original.type='original';";
       

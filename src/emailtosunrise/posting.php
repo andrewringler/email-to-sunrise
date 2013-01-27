@@ -52,12 +52,11 @@ function create_post_and_comments_from_db() {
    }		
   }
    
-  // // create comments from database
+  // create comments from database
   // $new_comments = new_comments();
   // foreach ($new_comments as $comment) {
   //   $time = current_time('mysql');
-  //   
-  //   $post_id = wordpress_post_id_for_email_id( $comment )
+  //   $post_id = wordpress_post_id_for_email_id( $comment-> );
   //   
   //   $data = array(
   //       'comment_post_ID' => 1,

@@ -18,13 +18,15 @@ require 'vendor/autoload.php';
 require 'database.php';
 require 'email.php';
 require 'posting.php';
+require 'debug.php';
 
 
 register_activation_hook(__FILE__,'email_to_sunrise_install_db');
 // TODO add upgrade function http://codex.wordpress.org/Creating_Tables_with_Plugins
 
 function email_to_sunrise_post() {
-  check_email_populate_db();
+  clear_db_posts_media_and_uploads();
+  check_email_populate_db($limit = 20);
   create_post_and_comments_from_db(); 
   
   // TODO the hook doesn't really allow for circumventing the email checking process

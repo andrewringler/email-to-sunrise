@@ -1,6 +1,6 @@
 <?php
 
-function check_email_populate_db() {
+function check_email_populate_db($limit = 5) {
   /* Params are pulled from Admin -> Settings -> Writing -> Post view e-mail
   mail server should not include protocol as it will be added here by Pop3
   and ignored
@@ -19,7 +19,7 @@ function check_email_populate_db() {
    // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
    $count = 0;
    foreach ($mail as $message) {
-     if($count >= 5){
+     if($count >= $limit){
        break;
      }
      $count++;
@@ -142,10 +142,9 @@ function get_message_info($message) {
 	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), '-forward-') ) {
 	    $m->type = 'ignored'; // ignore forwards
 		} else if ( $author_found && $category_found ) {
-		  if ( references_an_original($m->reference_id) ) {
-		    $m->type = 'comment';
-	    } else if ( $m->reference_id ) {
+		  if ( $m->reference_id ) {
 		    // has a reference, maybe will be a comment once we get more mail in
+		    // will be converted to a comment in a later pass
 		    $m->type = 'comment?';		  
 		  } else if ( $image_found ) {
 		    $m->type = 'original';
