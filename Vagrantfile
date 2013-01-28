@@ -37,7 +37,7 @@ Vagrant::Config.run do |config|
   # config.vm.share_folder "v-data", "/vagrant_data", "../data"
 
     # Mount main theme
-    #config.vm.share_folder "theme", "/var/www/wordpress/wp-content/themes/sunrise-wp-theme", "./sunrise-wp-theme", :owner => "www-data", :group => "www-data"
+    config.vm.share_folder "theme", "/var/www/wordpress/wp-content/themes/emailtosunrise-theme", "./emailtosunrise-theme", :owner => "www-data", :group => "www-data"
 
     # Email to Sunrise Plugin
 config.vm.share_folder "my-plugin", "/var/www/wordpress/wp-content/plugins/emailtosunrise", "./src/emailtosunrise", :owner => "www-data", :group => "www-data"
