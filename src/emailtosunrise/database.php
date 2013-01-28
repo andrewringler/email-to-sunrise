@@ -198,4 +198,12 @@ function get_image($post_id) {
    return $wpdb->get_row( $sql );
 }
 
+function blog_post_id_from_email_id($id) {
+  global $wpdb;
+  $message_table = $wpdb->prefix . "emailtosunrise_email";
+  $sql = $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='emailtosunrise_email_id' AND meta_value=%d LIMIT 1;",
+    array( $id ));
+  return $wpdb->get_var( $sql );   
+}
+
 ?>

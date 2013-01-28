@@ -53,28 +53,28 @@ function create_post_and_comments_from_db() {
   }
    
   // create comments from database
-  // $new_comments = new_comments();
-  // foreach ($new_comments as $comment) {
-  //   $time = current_time('mysql');
-  //   $post_id = wordpress_post_id_for_email_id( $comment-> );
-  //   
-  //   $data = array(
-  //       'comment_post_ID' => 1,
-  //       'comment_author' => 'admin',
-  //       'comment_author_email' => 'admin@admin.com',
-  //       'comment_author_url' => 'http://',
-  //       'comment_content' => 'content here',
-  //       'comment_type' => '',
-  //       'comment_parent' => 0,
-  //       'user_id' => 1,
-  //       'comment_author_IP' => '127.0.0.1',
-  //       'comment_agent' => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)',
-  //       'comment_date' => $time,
-  //       'comment_approved' => 1,
-  //   );
-  // 
-  //   wp_insert_comment($data);
-  // }  
+  $new_comments = new_comments();
+  foreach ($new_comments as $comment) {
+     $time = current_time('mysql');
+     $post_id = blog_post_id_from_email_id( $comment->ref_id );
+     
+     if( $post_id ) {
+       if ( is_email($comment->author) ) {
+    			$userdata = get_user_by('email', $comment->author);
+    			if ( ! empty( $userdata ) ) {
+    				$author_id = $userdata->ID;
+            $comment_data = array(
+                'comment_post_ID' => $post_id,
+                'comment_content' => $comment->body,
+                'comment_date' => $time,
+                'user_id' => $author_id
+            );       
+    			}
+    		}
+       
+       wp_insert_comment($comment_data);
+     }
+  }
 }
 
 ?>
