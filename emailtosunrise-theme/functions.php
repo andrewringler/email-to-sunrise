@@ -288,18 +288,20 @@ function twentytwelve_comment( $comment, $args, $depth ) {
 			<?php endif; ?>
 
 			<section class="comment-content comment">
-				<?php comment_text(); ?>
-				 <span class="comment-meta comment-author vcard">
-  				<?php
-            $user=get_userdata($comment->user_id);
-            $comment_author_display = $user->display_name;
-  					printf( '<cite class="fn">&mdash;%1$s %2$s</cite>',
-  						$comment_author_display ? $comment_author_display : get_comment_author_link(),
-  						// If current post author is also comment author, make it known visually.
-  						( $comment->user_id === $post->post_author ) ? '<span> ' . __( 'Post author', 'twentytwelve' ) . '</span>' : ''
-  					);
-  				?>
-  			</span><!-- .comment-meta -->
+				<p>
+				  <?php echo $comment->comment_content; ?>
+					 <span class="comment-meta comment-author vcard">
+    				<?php
+              $user=get_userdata($comment->user_id);
+              $comment_author_display = $user->display_name;
+    					printf( '<cite class="fn">&mdash;%1$s %2$s</cite>',
+    						$comment_author_display ? $comment_author_display : get_comment_author_link(),
+    						// If current post author is also comment author, make it known visually.
+    						( $comment->user_id === $post->post_author ) ? '<span> ' . __( 'Post author', 'twentytwelve' ) . '</span>' : ''
+    					);
+    				?>
+    			</span><!-- .comment-meta -->  
+				</p>
 
 				<?php edit_comment_link( __( 'Edit', 'twentytwelve' ), '<p class="edit-link">', '</p>' ); ?>
 			</section><!-- .comment-content -->
@@ -307,6 +309,63 @@ function twentytwelve_comment( $comment, $args, $depth ) {
 			<div class="reply">
 				<?php comment_reply_link( array_merge( $args, array( 'reply_text' => __( 'Reply', 'twentytwelve' ), 'after' => ' <span>&darr;</span>', 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?>
 			</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<?php
+		break;
+	endswitch; // end comment_type check
+}
+endif;
+
+if ( ! function_exists( 'twentytwelve_comment_no_reply' ) ) :
+/**
+ * Template for comments and pingbacks.
+ *
+ * To override this walker in a child theme without modifying the comments template
+ * simply create your own twentytwelve_comment(), and that function will be used instead.
+ *
+ * Used as a callback by wp_list_comments() for displaying the comments.
+ *
+ * @since Twenty Twelve 1.0
+ */
+function twentytwelve_comment_no_reply( $comment, $args, $depth ) {
+	$GLOBALS['comment'] = $comment;
+	switch ( $comment->comment_type ) :
+		case 'pingback' :
+		case 'trackback' :
+		// Display trackbacks differently than normal comments.
+	?>
+	<li <?php comment_class(); ?> id="comment-<?php comment_ID(); ?>">
+		<p><?php _e( 'Pingback:', 'twentytwelve' ); ?> <?php comment_author_link(); ?> <?php edit_comment_link( __( '(Edit)', 'twentytwelve' ), '<span class="edit-link">', '</span>' ); ?></p>
+	<?php
+			break;
+		default :
+		// Proceed with normal comments.
+		global $post;
+	?>
+	<li <?php comment_class(); ?> id="li-comment-<?php comment_ID(); ?>">
+		<article id="comment-<?php comment_ID(); ?>" class="comment">
+			<?php if ( '0' == $comment->comment_approved ) : ?>
+				<p class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.', 'twentytwelve' ); ?></p>
+			<?php endif; ?>
+
+			<section class="comment-content comment">
+				<p>
+				  <?php echo $comment->comment_content; ?>
+					 <span class="comment-meta comment-author vcard">
+    				<?php
+              $user=get_userdata($comment->user_id);
+              $comment_author_display = $user->display_name;
+    					printf( '<cite class="fn">&mdash;%1$s %2$s</cite>',
+    						$comment_author_display ? $comment_author_display : get_comment_author_link(),
+    						// If current post author is also comment author, make it known visually.
+    						( $comment->user_id === $post->post_author ) ? '<span> ' . __( 'Post author', 'twentytwelve' ) . '</span>' : ''
+    					);
+    				?>
+    			</span><!-- .comment-meta -->  
+				</p>
+
+			</section><!-- .comment-content -->
+
 		</article><!-- #comment-## -->
 	<?php
 		break;

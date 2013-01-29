@@ -56,4 +56,6 @@
 				</div><!-- .author-info -->
 			<?php endif; ?>
 		</footer><!-- .entry-meta -->
+		<?php $withcomments = 1; comments_template( '/comments-no-form.php', true ); ?>
+		
 	</article><!-- #post -->
