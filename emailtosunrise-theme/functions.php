@@ -405,7 +405,7 @@ function twentytwelve_entry_meta() {
 	if ( $tag_list ) {
 		$utility_text = __( '%1$s and tagged %2$s on %3$s<span class="by-author"> by %4$s</span>.', 'twentytwelve' );
 	} elseif ( $categories_list ) {
-		$utility_text = __( '%1$s on %3$s<span class="by-author"> by %4$s</span>.', 'twentytwelve' );
+		$utility_text = __( '<span class="by-author">&mdash;%4$s</span> on %3$s in %1$s', 'twentytwelve' );
 	} else {
 		$utility_text = __( '%3$s<span class="by-author"> by %4$s</span>.', 'twentytwelve' );
 	}

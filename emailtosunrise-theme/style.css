@@ -41,6 +41,7 @@ to maintain vertical rhythm:
 .my-new-div {
 	margin: 24px 0;
 	margin: 1.714285714rem 0; ( 24 / $rembase )
+	margin: 1.142857143rem 0; ( 16 / $rembase )
 }
 
 ---------- Further reading
@@ -684,7 +685,7 @@ footer[role="contentinfo"] a:hover {
 }
 .entry-header {
 	margin-bottom: 24px;
-	margin-bottom: 1.714285714rem;
+	margin-bottom: 1.142857143rem;
 }
 .entry-header img.wp-post-image {
 	margin-bottom: 24px;
@@ -793,8 +794,7 @@ article.sticky .featured-post {
 .entry-summary p,
 .comment-content p,
 .mu_register p {
-	margin: 0 0 24px;
-	margin: 0 0 1.714285714rem;
+	margin: 0;
 	line-height: 1.714285714;
 }
 .entry-content ol,
@@ -959,8 +959,9 @@ img.aligncenter {
 	line-height: 1.714285714;
 }
 footer.entry-meta {
-	margin-top: 24px;
-	margin-top: 1.714285714rem;
+	margin-top: 0;
+	margin-bottom: 24px;
+	margin-bottom: 1.714285714rem;
 	font-size: 13px;
 	font-size: 0.928571429rem;
 	line-height: 1.846153846;
@@ -1161,9 +1162,9 @@ article.format-quote .entry-content blockquote {
 	line-height: 1.5;
 	font-weight: normal;
 }
-.comments-area article {
-	margin: 24px 0;
-	margin: 1.714285714rem 0;
+.comments-area article.comment {
+	margin: 0;
+	padding-bottom: 0;
 }
 .comments-area article header {
 	margin: 0 0 48px;
