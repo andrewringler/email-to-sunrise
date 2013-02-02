@@ -26,7 +26,7 @@ register_activation_hook(__FILE__,'email_to_sunrise_install_db');
 
 function email_to_sunrise_post() {
   clear_db_posts_media_and_uploads();
-  check_email_populate_db($limit = 50);
+  check_email_populate_db($limit = 500);
   create_post_and_comments_from_db(); 
   
   // TODO the hook doesn't really allow for circumventing the email checking process

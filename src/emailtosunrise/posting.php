@@ -21,7 +21,7 @@ function create_post_and_comments_from_db() {
       add_post_meta( $post_id, 'emailtosunrise_email_id', $post->id );
       
       $image = get_image($post->id);
-      echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
+      // echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
       $wp_filetype = wp_check_filetype(basename($image->filename), null);
       $attachment = array(
          'guid' => $image->image_url, 
@@ -31,9 +31,9 @@ function create_post_and_comments_from_db() {
          'post_status' => 'inherit'
       );
       $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
-      echo '<p>attach id: '. esc_html(var_export($attach_id, true)) ."</p>\n";
+      // echo '<p>attach id: '. esc_html(var_export($attach_id, true)) ."</p>\n";
       $attach_data = wp_generate_attachment_metadata( $attach_id, $image->filename );
-      echo '<p>attach data: '. esc_html(var_export($attach_data, true)) ."</p>\n";
+      // echo '<p>attach data: '. esc_html(var_export($attach_data, true)) ."</p>\n";
       if ( $attach_data ) {
         wp_update_attachment_metadata( $attach_id, $attach_data );         
         

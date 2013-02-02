@@ -36,7 +36,6 @@ function check_email_populate_db($limit = 5) {
 
 function get_message_info($message) {
    $m = (object) array();
-   $post_body = '';
    $m->message_id = $message->getHeader('Message-ID', 'string');
    
    if( get_message_status( $m->message_id ) === 'seen' || get_message_status( $m->message_id ) === 'posted' ) {
@@ -64,6 +63,13 @@ function get_message_info($message) {
    if($content_type === 'text/plain'){
      // text/plain message, whole content is post body
      $m->body = $message->getContent();
+     try {
+       $encoding = $message->getHeader('Content-Transfer-Encoding', 'string');
+     } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+       // ignore, no references, not a reply or forward
+     }     
+     $m->body = $encoding === Zend\Mime\Mime::ENCODING_QUOTEDPRINTABLE ? quoted_printable_decode($m->body) : $m->body;
+     echo "found body part in plaintxt msg: ". $m->body ."<br>\n";
    } else {
      // multi-part message
      $foundPart = null;
@@ -72,7 +78,13 @@ function get_message_info($message) {
              // plain text part
              if (strtok($part->contentType, ';') == 'text/plain') {
                $foundPart = $part;
-               $m->body = $foundPart;
+               try {
+                 $encoding = $message->getHeader('Content-Transfer-Encoding', 'string');
+               } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+                 // ignore, no references, not a reply or forward
+               }     
+               $m->body = $encoding === Zend\Mime\Mime::ENCODING_QUOTEDPRINTABLE ? quoted_printable_decode($foundPart) : $foundPart;
+               echo "found body part in multi-part msg: ". $m->body ."<br>\n";
                
              // image
              } else if (strtok($part->contentType, ';') == 'image/jpeg') {
@@ -139,18 +151,43 @@ function get_message_info($message) {
 			}
 		}
 
-	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), '-forward-') ) {
+    /* Body cleanup
+    *
+    */
+    $m->body = ltrim($m->body);
+    // only keep first paragraph
+    echo "ltrim body[".$m->body."]<br>\n";
+    // $body_paragraphs = explode("\n\n", $m->body);
+    // $m->body = $body_paragraphs[0];
+    
+    // $paragraphs = preg_split("/^[\s:blank::space:]*$/", $m->body);
+    // $paragraphs = preg_match("/(^.*$)(.*)/", $m->body);
+    $paragraphs = preg_split("/\R\R/", $m->body);
+    $m->body = $paragraphs[0];
+    echo "paragraph 1[".$m->body."]<br>\n";
+    // body contains 'Sent from' delete the whole thing then
+    if ( strstr(strtolower($m->body), 'sent from') ) {
+      $m->body = '';
+    }
+    // body contains an email address? clear the entire body then.
+    // maybe we caught a forward or a reply include or a signature
+    // if ( preg_match('|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $m->body, $matches) ) {
+    //   foreach($matches as $match) {
+    //      if ( is_email(sanitize_email($match)) ) {
+    //        $m->body = '';
+    //        break;
+    //      }
+    //   }
+    // }
+
+	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), 'forward') ) {
 	    $m->type = 'ignored'; // ignore forwards
-		} else if ( $author_found && $category_found ) {
-		  if ( $m->reference_id ) {
-		    // has a reference, maybe will be a comment once we get more mail in
-		    // will be converted to a comment in a later pass
-		    $m->type = 'comment?';		  
-		  } else if ( $image_found ) {
+	  } else if ( $author_found && $m->reference_id ) {
+	    // has a reference, maybe will be a comment once we get more mail in
+	    // will be converted to a comment in a later pass
+		  $m->type = 'comment?';	    
+	  } else if ( $author_found && $category_found && $image_found ) {
 		    $m->type = 'original';
-		  } else {
-  		  $m->type = 'ignored';		    
-		  }
 		} else {
 		  $m->type = 'ignored';
 		}
@@ -174,6 +211,11 @@ function handle_message_info($m) {
        From: <?php echo esc_html($m->author_email); ?><br>
        Subject: <?php echo esc_html($m->title); ?><br>
        Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
+       <?php
+       if($m->reference_id){
+         echo "Reference: <small>". esc_html($m->reference_id) . "</small></br>\n";
+       }
+       ?>
        <br>
        <?php
     echo esc_html($m->body) .'<br>';

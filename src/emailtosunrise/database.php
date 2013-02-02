@@ -1,7 +1,7 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "1.5";
+$emailtosunrise_db_version = "1.9";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
@@ -15,8 +15,8 @@ function email_to_sunrise_install_db() {
      type VARCHAR(10),
      status VARCHAR(10),
      author VARCHAR(255),
-     subject VARCHAR(25),
-     body VARCHAR(25),
+     subject VARCHAR(255),
+     body VARCHAR(1024),
      message_id VARCHAR(78) NOT NULL,
      reference VARCHAR(78),
      ref_id BIGINT,
@@ -64,7 +64,7 @@ function set_message_status($message_id, $status, $type, $author = '', $subject 
    $message_id_truncated = substr($message_id, 0, 78);
    $reference_id_truncated = substr($reference, 0, 78);
    $author_truncated = substr($author, 0, 255);
-   $subject_truncated = substr($subject, 0, 20);
+   $subject_truncated = substr($subject, 0, 255);
    
    $patterns = array (
      '/\w/', // match any alpha-numeric character sequence, except underscores
@@ -78,7 +78,7 @@ function set_message_status($message_id, $status, $type, $author = '', $subject 
      '$0', // keep
      ' ' // leave only 1 space
    );
-   $body_truncated = substr(preg_filter($patterns, $replaces, $body), 0, 20);
+   $body_truncated = substr(preg_filter($patterns, $replaces, $body), 0, 1024);
    
    $id = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $message_table WHERE message_id=%s;", array($message_id_truncated)) );
    if( $id ) {
@@ -147,8 +147,9 @@ function find_new_comments() {
    $sql = "UPDATE $message_table comment, $message_table original
       SET comment.type='comment', comment.ref_id=original.id
       WHERE comment.type='comment?' AND (comment.status='seen' OR comment.status='posted')
-      AND comment.reference = original.message_id AND original.type='original';";
-      
+      AND comment.id <> original.id
+      AND (INSTR(comment.reference, original.message_id) <> 0) AND original.type='original';";
+
    return $wpdb->get_var( $sql );
 }
 
