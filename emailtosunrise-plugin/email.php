@@ -16,7 +16,7 @@ function check_email_populate_db($limit = 5) {
 
    $mail->selectFolder('sunrise');
    echo '<p>'. $mail->countMessages() . " messages found</p>\n";
-   // echo '<p>'. esc_html(print_r($mail->getFolders())) .'<br>\n';
+
    $count = 0;
    foreach ($mail as $message) {
      if($count >= $limit){
