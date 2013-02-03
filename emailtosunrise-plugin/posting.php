@@ -2,8 +2,35 @@
 
 require_once(ABSPATH . 'wp-admin/includes/image.php');
 require_once(ABSPATH . 'wp-admin/includes/file.php');
+require_once(ABSPATH . 'wp-admin/includes/taxonomy.php');
 
 function create_post_and_comments_from_db() {
+  // get or create categories
+  $sunsetsCategory = get_category_by_slug('sunsets');
+  if(!$sunsetsCategory){
+    $sunsetsCategory = wp_insert_category(
+      array('cat_name' => 'sunsets', 'category_description' => 'Sunset pictures', 'category_nicename' => 'Sunsets')
+    );
+    if(!$sunsetsCategory || is_wp_error($sunsetsCategory)){
+      $sunsetsCategory = false;
+    }
+  }else{
+    $sunsetsCategory = $sunsetsCategory->term_id;
+  }
+
+  $sunrisesCategory = get_category_by_slug('sunrises');
+  if(!$sunrisesCategory){
+    $sunrisesCategory = wp_insert_category(
+      array('cat_name' => 'sunrises', 'category_description' => 'Sunrise pictures', 'category_nicename' => 'Sunrises')
+    );
+    if(!$sunrisesCategory || is_wp_error($sunrisesCategory)){
+      $sunrisesCategory = false;
+    }
+  }else{
+    $sunrisesCategory = $sunrisesCategory->term_id;
+  }
+  echo "Using {$sunrisesCategory} and {$sunsetsCategory}<br>\n";
+  
   // create posts from database
   $new_posts = new_posts();
   foreach ($new_posts as $post) {
@@ -16,10 +43,26 @@ function create_post_and_comments_from_db() {
          'post_content'  => $post->body,
          'post_status'   => 'publish',
          'post_author'   => $author_id,
-         'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date)
+         'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date),
       );
       $post_id = wp_insert_post( $post_insert );
       add_post_meta( $post_id, 'emailtosunrise_email_id', $post->id );
+      
+      echo "Adding cats<br>\n";
+      
+      // Add categories
+      if($post->category === 'sunrises'){
+        $category = $sunrisesCategory;
+      }else if($post->category === 'sunsets'){
+        $category = $sunsetsCategory;      
+      }
+      echo "Cat is {$category}<br>\n";
+      
+      if($post_id && $category){
+        echo "Setting cat {$post_id} and {$category}<br>\n";
+        
+        wp_set_post_terms($post_id, $category, 'category');
+      }
       
       $image = get_image($post->id);
       // echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
