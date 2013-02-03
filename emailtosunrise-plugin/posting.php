@@ -48,24 +48,18 @@ function create_post_and_comments_from_db() {
       $post_id = wp_insert_post( $post_insert );
       add_post_meta( $post_id, 'emailtosunrise_email_id', $post->id );
       
-      echo "Adding cats<br>\n";
-      
       // Add categories
       if($post->category === 'sunrises'){
         $category = $sunrisesCategory;
       }else if($post->category === 'sunsets'){
         $category = $sunsetsCategory;      
       }
-      echo "Cat is {$category}<br>\n";
       
       if($post_id && $category){
-        echo "Setting cat {$post_id} and {$category}<br>\n";
-        
         wp_set_post_terms($post_id, $category, 'category');
       }
       
       $image = get_image($post->id);
-      // echo '<p>image: '. esc_html(var_export($image, true)) ."</p>\n";
       $wp_filetype = wp_check_filetype(basename($image->filename), null);
       $attachment = array(
          'guid' => $image->image_url, 
@@ -76,9 +70,7 @@ function create_post_and_comments_from_db() {
          'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date)
       );
       $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
-      // echo '<p>attach id: '. esc_html(var_export($attach_id, true)) ."</p>\n";
       $attach_data = wp_generate_attachment_metadata( $attach_id, $image->filename );
-      // echo '<p>attach data: '. esc_html(var_export($attach_data, true)) ."</p>\n";
       if ( $attach_data ) {
         wp_update_attachment_metadata( $attach_id, $attach_data );         
         
