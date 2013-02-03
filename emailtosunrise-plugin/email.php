@@ -37,6 +37,11 @@ function check_email_populate_db($limit = 5) {
 function get_message_info($message) {
    $m = (object) array();
    $m->message_id = $message->getHeader('Message-ID', 'string');
+   $m->send_date = DateTime::createFromFormat(DateTime::RFC2822, $message->getHeader('Date', 'string'));
+   if(!$m->send_date){
+     return (object) array( 'error' => 'Invalid date' );     
+   }
+   echo "Send date: " .esc_html(date_format($m->send_date, 'Y-m-d H:i:s')) ."<br>\n";
    
    if( get_message_status( $m->message_id ) === 'seen' || get_message_status( $m->message_id ) === 'posted' ) {
      $m->status = 'seen';
@@ -111,12 +116,12 @@ function get_message_info($message) {
                // }               
             }
          } catch (Zend_Mail_Exception $e) {
-           set_message_status($m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
+           set_message_status($m->send_date, $m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
            return (object) array( 'error' => 'Exception trying to read '. $m->message_id .' '.$e );
          }
      }
      if (!$foundPart) {
-       set_message_status($m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
+       set_message_status($m->send_date, $m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
        return (object) array( 'error' => 'No parts found in a multi-part message!' );
      }
    }
@@ -225,7 +230,7 @@ function handle_message_info($m) {
     }
     echo '<p>';    
     
-    $id = set_message_status($m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
+    $id = set_message_status($m->send_date, $m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
     if( $m->type === 'original' && $id ) {
       update_attachment($id, $m->image_url, $m->filename);      
     }
