@@ -36,11 +36,11 @@ Vagrant::Config.run do |config|
   # folder, and the third is the path on the host to the actual folder.
   # config.vm.share_folder "v-data", "/vagrant_data", "../data"
 
-    # Mount main theme
-    config.vm.share_folder "theme", "/var/www/wordpress/wp-content/themes/emailtosunrise-theme", "./emailtosunrise-theme", :owner => "www-data", :group => "www-data"
+  # Mount main theme
+  config.vm.share_folder "theme", "/var/www/wordpress/wp-content/themes/emailtosunrise-theme", "./emailtosunrise-theme", :owner => "www-data", :group => "www-data"
 
-    # Email to Sunrise Plugin
-config.vm.share_folder "my-plugin", "/var/www/wordpress/wp-content/plugins/emailtosunrise", "./src/emailtosunrise", :owner => "www-data", :group => "www-data"
+  # Email to Sunrise Plugin
+  config.vm.share_folder "my-plugin", "/var/www/wordpress/wp-content/plugins/emailtosunrise-plugin", "./emailtosunrise-plugin", :owner => "www-data", :group => "www-data"
 
 
   # Enable provisioning with Puppet stand alone.  Puppet manifests

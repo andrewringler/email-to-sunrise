@@ -46,5 +46,7 @@ threaded conversations by converting all replies to comments on the original pos
       * mysql -u root -p           use password 0JR1qLXJkztAbgOBGNBoLzimU
       
 ### Todo
+   * add categories
+   * use original email date as post date
    * rewrite url endpoint for email checking:
       * http://wordpress.stackexchange.com/questions/9870/how-do-you-create-a-virtual-page-in-wordpress

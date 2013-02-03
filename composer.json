@@ -1,7 +1,7 @@
 {
     "name": "andrewringler/email-to-sunrise",
     "config": {
-        "vendor-dir": "src/emailtosunrise/vendor"
+        "vendor-dir": "emailtosunrise-plugin/vendor"
     },
     "repositories": [
         {
