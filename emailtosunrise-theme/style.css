@@ -1164,6 +1164,8 @@ article.format-quote .entry-content blockquote {
 }
 .comments-area article.comment {
 	margin: 0;
+	margin-bottom: 12px;
+	margin-bottom: .857142857rem;
 	padding-bottom: 0;
 }
 .comments-area article header {
