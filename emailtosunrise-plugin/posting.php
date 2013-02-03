@@ -15,7 +15,8 @@ function create_post_and_comments_from_db() {
          'post_title'    => $post->subject,
          'post_content'  => $post->body,
          'post_status'   => 'publish',
-         'post_author'   => $author_id
+         'post_author'   => $author_id,
+         'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date)
       );
       $post_id = wp_insert_post( $post_insert );
       add_post_meta( $post_id, 'emailtosunrise_email_id', $post->id );
@@ -28,7 +29,8 @@ function create_post_and_comments_from_db() {
          'post_mime_type' => $wp_filetype['type'],
          'post_title' => preg_replace('/\.[^.]+$/', '', basename($image->filename)),
          'post_content' => '',
-         'post_status' => 'inherit'
+         'post_status' => 'inherit',
+         'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date)
       );
       $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
       // echo '<p>attach id: '. esc_html(var_export($attach_id, true)) ."</p>\n";
@@ -66,7 +68,7 @@ function create_post_and_comments_from_db() {
             $comment_data = array(
                 'comment_post_ID' => $post_id,
                 'comment_content' => $comment->body,
-                'comment_date' => $time,
+                'comment_date' => mysql2date('Y-m-d H:i:s', $post->send_date),
                 'user_id' => $author_id
             );       
     			}

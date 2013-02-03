@@ -41,7 +41,6 @@ function get_message_info($message) {
    if(!$m->send_date){
      return (object) array( 'error' => 'Invalid date' );     
    }
-   echo "Send date: " .esc_html(date_format($m->send_date, 'Y-m-d H:i:s')) ."<br>\n";
    
    if( get_message_status( $m->message_id ) === 'seen' || get_message_status( $m->message_id ) === 'posted' ) {
      $m->status = 'seen';
@@ -74,7 +73,6 @@ function get_message_info($message) {
        // ignore, no references, not a reply or forward
      }     
      $m->body = $encoding === Zend\Mime\Mime::ENCODING_QUOTEDPRINTABLE ? quoted_printable_decode($m->body) : $m->body;
-     echo "found body part in plaintxt msg: ". $m->body ."<br>\n";
    } else {
      // multi-part message
      $foundPart = null;
@@ -89,7 +87,6 @@ function get_message_info($message) {
                  // ignore, no references, not a reply or forward
                }     
                $m->body = $encoding === Zend\Mime\Mime::ENCODING_QUOTEDPRINTABLE ? quoted_printable_decode($foundPart) : $foundPart;
-               echo "found body part in multi-part msg: ". $m->body ."<br>\n";
                
              // image
              } else if (strtok($part->contentType, ';') == 'image/jpeg') {
@@ -101,19 +98,14 @@ function get_message_info($message) {
                $tmpFile = tempnam($uploadDir['path'], 'emailtosunrise') .'.jpg';
                $m->bytes = file_put_contents($tmpFile, $image);
                
-               // $movefile = wp_handle_upload( $tmpFile, array( 'test_form' => false ) );
-               // echo '<p>movefile: '. esc_html(var_export($movefile, true)) ."</p>\n";
-               
-               // if ( $movefile ) {
-                  $m->filename = $tmpFile;
-                  try {
-                    $m->image_name = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
-                  } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
-                    $m->image_name = '';
-                  }
-                  $m->image_url = $uploadDir['url'] . '/' . basename($tmpFile);               
-                  $image_found = true;
-               // }               
+                $m->filename = $tmpFile;
+                try {
+                  $m->image_name = sanitize_file_name($part->getHeaderField('Content-Disposition','filename'));
+                } catch (Zend\Mail\Storage\Exception\InvalidArgumentException $e) {
+                  $m->image_name = '';
+                }
+                $m->image_url = $uploadDir['url'] . '/' . basename($tmpFile);               
+                $image_found = true;
             }
          } catch (Zend_Mail_Exception $e) {
            set_message_status($m->send_date, $m->message_id, 'seen', 'error', $message->from, $m->title, $m->body);
@@ -161,29 +153,22 @@ function get_message_info($message) {
     */
     $m->body = ltrim($m->body);
     // only keep first paragraph
-    echo "ltrim body[".$m->body."]<br>\n";
-    // $body_paragraphs = explode("\n\n", $m->body);
-    // $m->body = $body_paragraphs[0];
-    
-    // $paragraphs = preg_split("/^[\s:blank::space:]*$/", $m->body);
-    // $paragraphs = preg_match("/(^.*$)(.*)/", $m->body);
     $paragraphs = preg_split("/\R\R/", $m->body);
     $m->body = $paragraphs[0];
-    echo "paragraph 1[".$m->body."]<br>\n";
     // body contains 'Sent from' delete the whole thing then
     if ( strstr(strtolower($m->body), 'sent from') ) {
       $m->body = '';
     }
     // body contains an email address? clear the entire body then.
     // maybe we caught a forward or a reply include or a signature
-    // if ( preg_match('|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $m->body, $matches) ) {
-    //   foreach($matches as $match) {
-    //      if ( is_email(sanitize_email($match)) ) {
-    //        $m->body = '';
-    //        break;
-    //      }
-    //   }
-    // }
+    if ( preg_match('|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $m->body, $matches) ) {
+      foreach($matches as $match) {
+         if ( is_email(sanitize_email($match)) ) {
+           $m->body = '';
+           break;
+         }
+      }
+    }
 
 	  if ( strstr(strtolower($m->title), 'fwd') || strstr(strtolower($m->body), 'forward') ) {
 	    $m->type = 'ignored'; // ignore forwards
