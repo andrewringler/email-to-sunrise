@@ -47,5 +47,6 @@ threaded conversations by converting all replies to comments on the original pos
       
 ### Todo
    * add categories
+   * publish to production
    * rewrite url endpoint for email checking:
       * http://wordpress.stackexchange.com/questions/9870/how-do-you-create-a-virtual-page-in-wordpress

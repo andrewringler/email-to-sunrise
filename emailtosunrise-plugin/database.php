@@ -1,7 +1,7 @@
 <?php
 
 global $emailtosunrise_db_version;
-$emailtosunrise_db_version = "2.0";
+$emailtosunrise_db_version = "2.1";
 
 function email_to_sunrise_install_db() {
    global $wpdb;
@@ -21,6 +21,7 @@ function email_to_sunrise_install_db() {
      reference VARCHAR(78),
      ref_id BIGINT,
      send_date DATETIME NOT NULL,
+     category VARCHAR(10),
      UNIQUE KEY message_id (id)
      );";
    dbDelta($sql);
@@ -59,7 +60,7 @@ type:
 
   ignored - email does not need to ever by re-visisted
 */
-function set_message_status($send_date, $message_id, $status, $type, $author = '', $subject = '', $body = '', $reference = '') {
+function set_message_status($send_date, $message_id, $status, $type, $author = '', $subject = '', $body = '', $reference = '', $category = '') {
    global $wpdb;
    $message_table = $wpdb->prefix . "emailtosunrise_email";
    $message_id_truncated = substr($message_id, 0, 78);
@@ -92,7 +93,8 @@ function set_message_status($send_date, $message_id, $status, $type, $author = '
      		'subject' => $subject_truncated,
      		'body' => $body_truncated,
      		'reference' => $reference_id_truncated,
-     		'send_date' => date_format($send_date, 'Y-m-d H:i:s')
+     		'send_date' => date_format($send_date, 'Y-m-d H:i:s'),
+     		'category' => $category
      	), 
      	array( 'id' => $id ), 
      	array( '%s','%s','%s','%s','%s','%s' ), 
@@ -110,7 +112,8 @@ function set_message_status($send_date, $message_id, $status, $type, $author = '
                	'subject' => $subject_truncated,
                	'body' => $body_truncated,
              		'reference' => $reference_id_truncated,
-             		'send_date' => date_format($send_date, 'Y-m-d H:i:s')
+             		'send_date' => date_format($send_date, 'Y-m-d H:i:s'),
+             		'category' => $category
         )
       );
       

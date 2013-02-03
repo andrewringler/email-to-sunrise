@@ -201,6 +201,7 @@ function handle_message_info($m) {
        From: <?php echo esc_html($m->author_email); ?><br>
        Subject: <?php echo esc_html($m->title); ?><br>
        Message-ID: <small><?php echo esc_html($m->message_id); ?></small><br>
+       Category: <?php echo esc_html($m->category); ?><br>
        <?php
        if($m->reference_id){
          echo "Reference: <small>". esc_html($m->reference_id) . "</small></br>\n";
@@ -215,7 +216,7 @@ function handle_message_info($m) {
     }
     echo '<p>';    
     
-    $id = set_message_status($m->send_date, $m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id);
+    $id = set_message_status($m->send_date, $m->message_id, 'seen', $m->type, $m->author_email, $m->title, $m->body, $m->reference_id, $m->category);
     if( $m->type === 'original' && $id ) {
       update_attachment($id, $m->image_url, $m->filename);      
     }
