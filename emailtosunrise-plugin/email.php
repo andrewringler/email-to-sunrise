@@ -14,7 +14,7 @@ function check_email_populate_db($limit = 5) {
                                            'ssl'      => 'SSL'
                                            ));  
 
-   $mail->selectFolder('sunrise');
+   $mail->selectFolder('[Gmail]/All Mail');
    echo '<p>'. $mail->countMessages() . " messages found</p>\n";
 
    $count = 0;
