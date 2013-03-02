@@ -46,7 +46,6 @@ threaded conversations by converting all replies to comments on the original pos
       * mysql -u root -p           use password 0JR1qLXJkztAbgOBGNBoLzimU
       
 ### Todo
-   * add categories
    * publish to production
    * rewrite url endpoint for email checking:
       * http://wordpress.stackexchange.com/questions/9870/how-do-you-create-a-virtual-page-in-wordpress
