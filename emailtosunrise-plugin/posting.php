@@ -29,10 +29,11 @@ function create_post_and_comments_from_db() {
   }else{
     $sunrisesCategory = $sunrisesCategory->term_id;
   }
-  echo "Using {$sunrisesCategory} and {$sunsetsCategory}<br>\n";
+  echo "Using categories {$sunrisesCategory} and {$sunsetsCategory}<br>\n";
   
   // create posts from database
   $new_posts = new_posts();
+
   foreach ($new_posts as $post) {
    $userdata = get_user_by('email', $post->author);
    if ( ! empty( $userdata ) ) {
@@ -69,8 +70,10 @@ function create_post_and_comments_from_db() {
          'post_status' => 'inherit',
          'post_date'     => mysql2date('Y-m-d H:i:s', $post->send_date)
       );
+      
       $attach_id = wp_insert_attachment( $attachment, $image->filename, $post_id );
       $attach_data = wp_generate_attachment_metadata( $attach_id, $image->filename );
+      
       if ( $attach_data ) {
         wp_update_attachment_metadata( $attach_id, $attach_data );         
         
@@ -84,7 +87,6 @@ function create_post_and_comments_from_db() {
         //   <img class="alignnone size-full wp-image-1140" alt="emailtosunrisezUyM1H" src="http://192.168.33.20/wp-content/uploads/2013/01/emailtosunrisezUyM1H.jpg" width="640" height="640" />
         //  </a>
       }
-      
       update_message_status( $post->id, 'posted' );
    }		
   }

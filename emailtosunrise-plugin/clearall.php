@@ -1,6 +1,7 @@
 <?php
 
 function clear_db_posts_media_and_uploads() {
+  echo "Clearing all Posts, Media and Db";
   global $wpdb;
   $message_table = $wpdb->prefix . "emailtosunrise_email";
   $image_table = $wpdb->prefix . "emailtosunrise_images";
@@ -13,6 +14,7 @@ function clear_db_posts_media_and_uploads() {
   foreach($posts as $post_id) {
    wp_delete_post( $post_id, true);
   }
+  echo "Done.";
 }
 
 ?>

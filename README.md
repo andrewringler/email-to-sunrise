@@ -5,7 +5,24 @@ WIP - email-to-sunrise. My family sends around sunrise and sunset photos via ema
 this wordpress plugin parses those emails and converts them into Wordress posts maintaining 
 threaded conversations by converting all replies to comments on the original post.
 
-### Get Started
+### Production
+   * Install wordpress somewhere
+      * and plugins:
+         * [Force Strong Passwords](http://bit.ly/ForceStrongPasswordsPlugin)
+         * [Limit Login Attempts](http://bit.ly/LimitLoginAttemptsPlugin)
+   * Setup users (be sure to set display name), only registered authors will be allowed to post
+   * Set site title
+   * Set 15 posts max
+   * Settings -> Permalinks -> /%postname%-%year%-%monthnum%-%day%/
+   * Widgets -> Archives & Categories
+   * ./pushToProduction.sh
+   * active theme
+   * active plugin
+   * set Settings -> Writing -> Post via e-mail
+   * visit sitename/wp-mail.php to populate emails
+   * Add categories to menu
+   
+### Developer - Getting Started
    * Clone repo, cd email-to-sunrise
    * Install [rvm](https://rvm.io/) latest
       * rvm use 1.9.3
@@ -30,7 +47,6 @@ threaded conversations by converting all replies to comments on the original pos
 #### Run the Tests
    * Run the Tests
       * ./vendor/bin/phpunit test
-    
 
 ### References
    * [Post to your blog using email](http://codex.wordpress.org/Post_to_your_blog_using_email)
@@ -44,8 +60,17 @@ threaded conversations by converting all replies to comments on the original pos
    * vagrant ssh   (login to vagrant instance)
       * less /var/log/apache2/wordpress-error.log
       * mysql -u root -p           use password 0JR1qLXJkztAbgOBGNBoLzimU
-      
+   
 ### Todo
-   * publish to production
-   * rewrite url endpoint for email checking:
-      * http://wordpress.stackexchange.com/questions/9870/how-do-you-create-a-virtual-page-in-wordpress
+   * multiple images for a single email
+   * images in comments
+   * more robust email checking
+      * don't blow about all emails when checking
+      * should only check unseen emails
+   * menu is being clobbered on load
+   * post thumbnails
+   * user avatars
+   * custom params for plugin (instead of using wp-email endpoint)
+   * more intelligent about which posts are originals
+      * capture image md5 don't show again?
+   * rewrite url endpoint for email checking: http://wordpress.stackexchange.com/questions/9870/how-do-you-create-a-virtual-page-in-wordpress
